@@ -1,0 +1,14 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+*.egg-info/
+
+# Habilidades adicionadas via /api/base-resume/skills (estado local, nao codigo)
+data/
+
+# Nunca commitar credenciais
+.env
+.env.*
+!.env.example

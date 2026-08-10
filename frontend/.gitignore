@@ -1,0 +1,16 @@
+node_modules/
+.next/
+out/
+build/
+*.tsbuildinfo
+next-env.d.ts
+
+# Nunca commitar credenciais
+.env
+.env.local
+.env.*.local
+
+.DS_Store
+*.log
+coverage/
+tmp/

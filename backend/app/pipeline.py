@@ -20,8 +20,9 @@ Tres fluxos distintos:
 
 O curriculo base e imutavel (modelos `frozen`); a integridade e verificada e
 exposta em `base_resume_untouched`. Confirmacoes de gap (regra 2) nunca
-alteram o curriculo base — apenas o indice de evidencias usado nesta
-chamada e a categoria "Confirmado para esta vaga" das versoes adaptadas.
+alteram o curriculo base — apenas o indice de evidencias usado nesta chamada
+e, nas versoes adaptadas, os termos confirmados sao fundidos na categoria de
+habilidades existente correspondente (nunca uma categoria a parte).
 """
 
 from __future__ import annotations

@@ -2,10 +2,12 @@
 
 Nenhuma palavra nova e inventada: tecnologias vem das habilidades do base,
 capacidades e focos vem de `summary_template`, e ambos so entram se houver
-evidencia real no indice. A unica excecao controlada e a categoria
-"Confirmado para esta vaga": termos que a PESSOA confirmou ter (fluxo de
-gap confirmation, `app.job.confirmations`) e que passam a ter evidencia no
-indice desta chamada — nunca no curriculo base permanente.
+evidencia real no indice. A unica excecao controlada sao os termos que a
+PESSOA confirmou ter (fluxo de gap confirmation, `app.job.confirmations`) e
+que passam a ter evidencia no indice desta chamada — nunca no curriculo base
+permanente. Esses termos sao fundidos nas categorias de habilidades ja
+existentes (pela taxonomia do termo), nunca numa categoria a parte: no
+curriculo final ficam indistinguiveis de uma habilidade original.
 
 Estrategias de adaptacao (regra 9): exatamente tres, cada uma reordenando o
 MESMO conteudo de forma diferente. Nenhuma remove ou inventa nada; a
@@ -22,7 +24,7 @@ from typing import Literal
 
 from app.job.matching import score_terms
 from app.job.models import JobAnalysis, MatchReport
-from app.job.taxonomy import detect_terms, resolve_canonical
+from app.job.taxonomy import TermCategory, detect_terms, get_category, resolve_canonical
 from app.resume.evidence import EvidenceIndex
 from app.resume.models import Resume, ResumeExperience, ResumeSkillCategory
 
@@ -54,8 +56,27 @@ STRATEGY_DESCRIPTIONS: dict[AdaptationStrategy, str] = {
     ),
 }
 
-CONFIRMED_CATEGORY_ID = "skills-confirmed-for-job"
-CONFIRMED_CATEGORY_LABEL = "Confirmado para esta vaga"
+#: Categorias-alvo padrao do curriculo base (`app.resume.base_resume`), usadas
+#: para fundir termos confirmados sem criar uma categoria a parte.
+_FRONTEND_TECH_TERMS = {
+    "TypeScript",
+    "JavaScript",
+    "React",
+    "Next.js",
+    "Angular",
+    "Vue",
+    "Svelte",
+    "Tailwind CSS",
+}
+_TARGET_CATEGORY_BY_TERM_CATEGORY: dict[TermCategory, str] = {
+    "database": "skills-data",
+    "ai_ml": "skills-ai",
+    "cloud": "skills-cloud",
+    "devops": "skills-cloud",
+    "tool": "skills-eng",
+    "competency": "skills-eng",
+}
+_DEFAULT_CODE_CATEGORY_ID = "skills-backend"
 
 
 @dataclass(frozen=True)
@@ -220,19 +241,50 @@ def _augment_relevance(
     return augmented
 
 
-def _confirmed_skill_category(
-    confirmed: tuple[str, ...], existing: tuple[ResumeSkillCategory, ...]
-) -> ResumeSkillCategory | None:
-    """Categoria auditavel para termos que a PESSOA confirmou ter (fluxo de
-    gap confirmation). So existe na versao adaptada — nunca no curriculo
-    base. Termos ja declarados em outra categoria nao sao duplicados."""
-    already_listed = {item for category in existing for item in category.items}
-    new_items = tuple(term for term in confirmed if term not in already_listed)
-    if not new_items:
-        return None
-    return ResumeSkillCategory(
-        id=CONFIRMED_CATEGORY_ID, label=CONFIRMED_CATEGORY_LABEL, items=new_items
-    )
+def _target_category_id(term: str) -> str:
+    """Categoria do curriculo base onde um termo confirmado deve entrar,
+    pela taxonomia do termo — nunca uma categoria nova."""
+    if term in _FRONTEND_TECH_TERMS:
+        return "skills-frontend"
+    category = get_category(term)
+    if category in ("language", "framework"):
+        return _DEFAULT_CODE_CATEGORY_ID
+    return _TARGET_CATEGORY_BY_TERM_CATEGORY.get(category, "skills-eng")
+
+
+def _merge_confirmed_skills(
+    confirmed: tuple[str, ...], categories: tuple[ResumeSkillCategory, ...]
+) -> tuple[tuple[ResumeSkillCategory, ...], list[str]]:
+    """Funde termos que a PESSOA confirmou ter (fluxo de gap confirmation) nas
+    categorias de habilidades ja existentes, pela taxonomia de cada termo.
+    Nunca cria uma categoria a parte: no curriculo final o termo aparece
+    junto das demais habilidades da categoria, sem nenhuma marcacao especial.
+    Termos ja declarados em outra categoria nao sao duplicados."""
+    already_listed = {item for category in categories for item in category.items}
+    new_by_target: dict[str, list[str]] = {}
+    for term in confirmed:
+        if term in already_listed:
+            continue
+        already_listed.add(term)
+        new_by_target.setdefault(_target_category_id(term), []).append(term)
+
+    if not new_by_target:
+        return categories, []
+
+    changes: list[str] = []
+    merged: list[ResumeSkillCategory] = []
+    for category in categories:
+        added = new_by_target.get(category.id)
+        if not added:
+            merged.append(category)
+            continue
+        merged.append(category.model_copy(update={"items": (*category.items, *added)}))
+        changes.append(
+            f'Habilidade(s) que você confirmou ter incorporada(s) à categoria '
+            f'"{category.label}": {", ".join(added)}.'
+        )
+
+    return tuple(merged), changes
 
 
 def _reorder_skills(
@@ -287,9 +339,10 @@ def adapt_resume(
     aprovados do curriculo base.
 
     `confirmed` sao termos que a PESSOA confirmou ter no fluxo de gap
-    confirmation (regra 2) — entram como uma categoria extra e auditavel
-    ("Confirmado para esta vaga"), nunca misturados as habilidades originais
-    do curriculo base.
+    confirmation (regra 2) — sao fundidos na categoria de habilidades
+    existente que corresponde a taxonomia do termo (ex.: Kubernetes entra em
+    "Cloud / DevOps"), nunca numa categoria a parte: no curriculo final ficam
+    indistinguiveis das habilidades originais.
 
     O texto dos bullets, os projetos, a formacao, os cursos, os idiomas e o
     cargo do cabecalho permanecem intocados, e nenhuma habilidade original e
@@ -315,14 +368,8 @@ def adapt_resume(
     skill_categories, skill_changes = _reorder_skills(base.skill_categories, relevance)
     change_log.extend(skill_changes)
 
-    confirmed_category = _confirmed_skill_category(confirmed, skill_categories)
-    if confirmed_category is not None:
-        skill_categories = (*skill_categories, confirmed_category)
-        change_log.append(
-            "Adicionada a categoria \"Confirmado para esta vaga\" com "
-            f"{len(confirmed_category.items)} habilidade(s) que você confirmou ter: "
-            f"{', '.join(confirmed_category.items)}."
-        )
+    skill_categories, confirmed_changes = _merge_confirmed_skills(confirmed, skill_categories)
+    change_log.extend(confirmed_changes)
 
     scored_projects = []
     for position, project in enumerate(base.projects):

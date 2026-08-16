@@ -131,8 +131,8 @@ def apply_confirmations(
 
 def confirmed_terms(confirmations: tuple[SkillConfirmation, ...]) -> tuple[str, ...]:
     """Termos com resposta "yes", canonizados e sem duplicatas — usados para
-    render a categoria auditável "Confirmado para esta vaga" na versão
-    adaptada (nunca no currículo base)."""
+    fundir esses termos na categoria de habilidades existente correspondente
+    da versão adaptada (nunca no currículo base, nunca numa categoria à parte)."""
     seen: dict[str, None] = {}
     for confirmation in confirmations:
         if confirmation.answer != "yes":

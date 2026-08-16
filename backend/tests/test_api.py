@@ -137,8 +137,9 @@ class TestCreateVersion:
             },
         ).json()
         categories = payload["balanced"]["resume"]["skill_categories"]
-        confirmed = next(c for c in categories if c["id"] == "skills-confirmed-for-job")
-        assert "Kubernetes" in confirmed["items"]
+        assert not any(c["id"] == "skills-confirmed-for-job" for c in categories)
+        cloud_category = next(c for c in categories if c["id"] == "skills-cloud")
+        assert "Kubernetes" in cloud_category["items"]
 
 
 class TestPdf:

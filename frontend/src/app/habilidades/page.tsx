@@ -55,7 +55,7 @@ export default function HabilidadesPage() {
           href="/"
           className="text-xs text-zinc-500 underline underline-offset-2 hover:text-zinc-800"
         >
-          ← Voltar
+          ← Voltar ao início
         </Link>
         <h1 className="mt-3 text-2xl font-semibold tracking-tight text-zinc-900">
           Habilidades técnicas

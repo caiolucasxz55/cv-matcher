@@ -39,7 +39,7 @@ O CV Matcher **não gera currículo o tempo todo**. A função principal é diag
 
 Se a vaga pede algo que o currículo base não evidencia, o sistema **não** decide sozinho que é um gap: ele pergunta (`app/job/confirmations.py`).
 
-- **Sim, tenho experiência** — a pessoa pode informar onde/como adquiriu; o termo passa a valer no matching **desta análise** e pode aparecer na versão adaptada, numa categoria auditável e separada: "Confirmado para esta vaga". O currículo base nunca é alterado por uma confirmação.
+- **Sim, tenho experiência** — a pessoa pode informar onde/como adquiriu; o termo passa a valer no matching **desta análise** e pode aparecer na versão adaptada, fundido na categoria de habilidades já existente correspondente (ex.: Kubernetes entra em "Cloud / DevOps") — nunca numa categoria à parte ou com qualquer marcação visível de "confirmado". O currículo base nunca é alterado por uma confirmação.
 - **Não tenho experiência** — vira gap de verdade. Nunca entra no currículo.
 - **Não tenho certeza** — fica como requisito não confirmado. Nunca entra no currículo, mas não é tratado como um "não" definitivo.
 
@@ -50,7 +50,7 @@ Se a vaga pede algo que o currículo base não evidencia, o sistema **não** dec
 | Links, dados pessoais | Resumo profissional |
 | Texto literal de cada bullet | Ordem das habilidades |
 | Projetos, formação, cursos, idiomas | Ordem dos bullets |
-| Cargo do cabeçalho | Categoria extra "Confirmado para esta vaga" (só se houver confirmações) |
+| Cargo do cabeçalho | Habilidades confirmadas pela pessoa, fundidas na categoria correspondente (só se houver confirmações) |
 | **Todas** as stacks originais (nada é omitido) | |
 
 ### As 3 versões (regra 9 — sempre exatamente estas três)

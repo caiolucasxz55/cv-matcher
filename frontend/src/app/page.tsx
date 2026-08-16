@@ -133,6 +133,15 @@ export default function Home() {
   return (
     <main className="mx-auto max-w-4xl px-5 py-12">
       <header className="mb-10">
+        {step !== 'form' && (
+          <button
+            type="button"
+            onClick={handleReset}
+            className="mb-3 text-xs text-zinc-500 underline underline-offset-2 hover:text-zinc-800"
+          >
+            ← Voltar ao início
+          </button>
+        )}
         <div className="flex items-start justify-between gap-4">
           <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">CV Matcher</h1>
           <Link

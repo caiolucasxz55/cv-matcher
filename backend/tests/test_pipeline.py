@@ -226,10 +226,11 @@ class TestGapConfirmation:
         assert any(item.term == "Kubernetes" for item in result.match.strong + result.match.medium)
 
         adapted = result.balanced.adaptation.resume
-        confirmed_category = next(
-            c for c in adapted.skill_categories if c.id == "skills-confirmed-for-job"
-        )
-        assert "Kubernetes" in confirmed_category.items
+        # Kubernetes (devops) e fundido em "Cloud / DevOps" — nunca numa
+        # categoria a parte.
+        assert not any(c.id == "skills-confirmed-for-job" for c in adapted.skill_categories)
+        cloud_category = next(c for c in adapted.skill_categories if c.id == "skills-cloud")
+        assert "Kubernetes" in cloud_category.items
         assert result.balanced.validation.is_valid is True
 
     @pytest.mark.anyio

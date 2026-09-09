@@ -2,6 +2,7 @@ import type {
   AnalyzeResponse,
   CreateVersionPayload,
   CreateVersionResponse,
+  GupyResponse,
   JobAnalysis,
   JobPayload,
   Resume,
@@ -73,6 +74,19 @@ export function createVersion(payload: CreateVersionPayload): Promise<CreateVers
     '/api/versions',
     payload,
     'Falha ao criar a versão adaptada.',
+  );
+}
+
+/**
+ * "Currículo versão Gupy": gera o parágrafo de atividades e a lista de
+ * palavras-chave prontos para colar nos campos separados que a Gupy exige
+ * em vez de aceitar PDF direto. Mesma validação de `analyzeJob`.
+ */
+export function buildGupyFormat(payload: JobPayload): Promise<GupyResponse> {
+  return postJson<GupyResponse>(
+    '/api/gupy',
+    payload,
+    'Falha ao gerar o currículo no formato Gupy.',
   );
 }
 

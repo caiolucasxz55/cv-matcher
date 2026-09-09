@@ -144,12 +144,20 @@ export default function Home() {
         )}
         <div className="flex items-start justify-between gap-4">
           <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">CV Matcher</h1>
-          <Link
-            href="/habilidades"
-            className="mt-1 shrink-0 text-xs text-zinc-500 underline underline-offset-2 hover:text-zinc-800"
-          >
-            Editar habilidades técnicas
-          </Link>
+          <div className="mt-1 flex shrink-0 flex-col items-end gap-1 text-xs">
+            <Link
+              href="/gupy"
+              className="text-zinc-500 underline underline-offset-2 hover:text-zinc-800"
+            >
+              Currículo versão Gupy
+            </Link>
+            <Link
+              href="/habilidades"
+              className="text-zinc-500 underline underline-offset-2 hover:text-zinc-800"
+            >
+              Editar habilidades técnicas
+            </Link>
+          </div>
         </div>
         <p className="mt-1 text-sm text-zinc-600">
           Descubra se seu currículo atende a vaga, confirme o que falta e compare 3 versões

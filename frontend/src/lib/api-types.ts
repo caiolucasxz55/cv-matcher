@@ -318,3 +318,12 @@ export interface SkillsOverview {
   categories: SkillCategory[];
   available_terms: string[];
 }
+
+/** Resposta do "Currículo versão Gupy": parágrafo de atividades + keywords. */
+export interface GupyResponse {
+  activity_description: string;
+  keywords: string[];
+  match_score: number;
+  role: string;
+  company: string;
+}

@@ -92,6 +92,20 @@ Se a vaga pede Kubernetes e o candidato não tem, o sistema reporta
 
 **Edição manual é diferente.** A pessoa pode editar habilidades livremente — na tela de Habilidades (`/habilidades`, muda o currículo base) ou ao vivo numa versão específica (tela de revisão, com `POST /api/revalidate`). O **FactualGuard** determinístico continua comparando cada token do currículo com o vocabulário do base e sinalizando o que não tem respaldo, tanto nessas telas quanto em `POST /api/pdf` (via log de auditoria no servidor). Mas essa checagem **não bloqueia mais** a geração do PDF — ela avisa, e quem decide seguir em frente mesmo assim é sempre a pessoa, nunca o sistema automaticamente.
 
+### Currículo versão Gupy
+
+A Gupy (e ATS parecidos) não aceita currículo em PDF direto: a pessoa preenche campos separados — para cada experiência, um texto livre de "Descrição de atividades", e à parte, tags soltas de habilidades. A tela `/gupy` (`POST /api/gupy`) gera os dois blocos já prontos para colar:
+
+- **Descrição de atividades** — um parágrafo (não bullets) por experiência, com a atividade mais aderente à vaga vindo primeiro.
+- **Palavras-chave / Habilidades** — todas as habilidades já declaradas no currículo, achatadas numa lista única e ordenadas por relevância para a vaga.
+
+Roda o mesmo pipeline de **análise** do fluxo principal (`run_analysis_pipeline`) — não adapta nada, então o preview interno é sempre o currículo base intacto. A única lógica nova é `backend/app/resume/gupy_format.py`, com duas funções puras e determinísticas:
+
+- `build_activity_paragraph(experience, relevance)` — reordena os bullets de **uma** experiência por relevância (reaproveitando `score_terms` de `app.job.matching`, a mesma lógica de `_reorder_experience` em `app.resume.adapt`) e concatena o texto **literal** deles. Nenhuma frase é reescrita ou criada — a única variação possível é a ordem. Recebe uma experiência por chamada (não a lista inteira) para já funcionar no dia em que houver mais de uma, mesmo a UI hoje só mostrando a única existente (Inoltra-Tech).
+- `build_keyword_list(skill_categories, relevance)` — achata as habilidades declaradas numa lista única ordenada por relevância; nenhum termo fora do que já está no currículo entra na lista.
+
+Mesma garantia do resto do sistema: nada é inventado, só reordenado.
+
 ## Como rodar
 
 ### Backend (FastAPI)
@@ -150,6 +164,7 @@ Sem `AI_API_KEY`, o backend usa o **`HeuristicProvider`**: um provider determin�
 | `GET` | `/api/base-resume/skills` | Habilidades técnicas do currículo base (originais + adicionadas pela pessoa) |
 | `POST` | `/api/base-resume/skills` | Adiciona uma habilidade ao currículo base |
 | `POST` | `/api/base-resume/skills/remove` | Remove uma habilidade adicionada anteriormente |
+| `POST` | `/api/gupy` | "Currículo versão Gupy": parágrafo de atividades + lista de palavras-chave, para ATS de campos separados (ver seção própria abaixo) |
 
 ```bash
 curl -X POST http://localhost:8000/api/analyze \
@@ -218,11 +233,11 @@ Nome do arquivo (regra 15 — curto, sem cargo/score/versão/timestamp): `curric
 ## Testes
 
 ```bash
-cd backend && pytest        # ~108 testes
+cd backend && pytest        # ~126 testes
 cd frontend && npx tsc --noEmit
 ```
 
-Cobrem: análise da vaga, matching, aliases/taxonomia, proteção contra tecnologias inexistentes, confirmação de gaps (sim/não/não-tenho-certeza e seus efeitos no matching e na versão adaptada), geração das 3 estratégias e sua não-remoção/não-invenção de conteúdo, recomendação entre as 3 versões, validação factual, auto-correção, detecção de arquétipo, redações de resumo (todas passam pelo FactualGuard), imutabilidade do currículo base mesmo com confirmações, reanálise recalculando match+validação+recomendação juntos, geração e estrutura do PDF, nome de arquivo curto, vaga muito longa (>30k caracteres), vaga sem tecnologias, e a camada HTTP.
+Cobrem: análise da vaga, matching, aliases/taxonomia, proteção contra tecnologias inexistentes, confirmação de gaps (sim/não/não-tenho-certeza e seus efeitos no matching e na versão adaptada), geração das 3 estratégias e sua não-remoção/não-invenção de conteúdo, recomendação entre as 3 versões, validação factual, auto-correção, detecção de arquétipo, redações de resumo (todas passam pelo FactualGuard), imutabilidade do currículo base mesmo com confirmações, reanálise recalculando match+validação+recomendação juntos, geração e estrutura do PDF, nome de arquivo curto, vaga muito longa (>30k caracteres), vaga sem tecnologias, o currículo versão Gupy (parágrafo sem nenhuma palavra fora dos bullets do base, reordenação por relevância, keywords só com habilidades declaradas), e a camada HTTP.
 
 > Duas suítes de `test_ai_factory.py` (`test_provider_padrao_com_chave_e_anthropic`, `test_provider_gemini`) podem falhar neste ambiente por incompatibilidade de versão entre os SDKs `anthropic`/`google-genai` instalados e `httpx` — é um problema de dependências pré-existente, não relacionado à lógica do CV Matcher.
 

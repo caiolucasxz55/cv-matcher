@@ -107,7 +107,7 @@ ARCHETYPES: tuple[Archetype, ...] = (
             "Performance",
             "Escalabilidade",
         ),
-        tech_pool=("Python", "FastAPI", "REST APIs", "Node.js", "Java", "Flask"),
+        tech_pool=("Python", "FastAPI", "REST APIs", "Node.js", "Java"),
         variants=(
             ArchetypeSummaryVariant(
                 id="backend-conciso",

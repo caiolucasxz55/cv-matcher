@@ -34,9 +34,11 @@ BASE_RESUME = Resume(
         email="caiolucasxz55@gmail.com",
         phone="(11) 91281-7389",
         links=(
-            ResumeLink(label="GitHub", url="https://github.com/"),
-            ResumeLink(label="LinkedIn", url="https://www.linkedin.com/"),
-            ResumeLink(label="Portfólio", url="https://portfolio.example.com/"),
+            ResumeLink(label="GitHub", url="https://github.com/caiolucasxz55"),
+            ResumeLink(
+                label="LinkedIn", url="https://www.linkedin.com/in/caio-lucas-a892b4324"
+            ),
+            ResumeLink(label="Portfólio", url="https://portifolio-caio-umber.vercel.app/"),
         ),
     ),
     summary=(
@@ -151,7 +153,7 @@ BASE_RESUME = Resume(
         ResumeSkillCategory(
             id="skills-backend",
             label="Backend",
-            items=("Python", "FastAPI", "Node.js", "Java", "Flask", "REST APIs"),
+            items=("Python", "FastAPI", "Node.js", "Java", "REST APIs"),
         ),
         ResumeSkillCategory(
             id="skills-data",

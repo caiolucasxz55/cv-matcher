@@ -17,9 +17,15 @@ export function ResumePreview({ resume }: { resume: Resume }) {
         </p>
         <p className="mt-1 flex gap-3 text-xs">
           {resume.basics.links.map((link) => (
-            <span key={link.label} className="text-sky-700">
+            <a
+              key={link.label}
+              href={link.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sky-700 underline underline-offset-2 hover:text-sky-900"
+            >
               {link.label}
-            </span>
+            </a>
           ))}
         </p>
       </header>

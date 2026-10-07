@@ -52,7 +52,7 @@ export function GapQuestions({
     >
       <div className="space-y-4">
         {questions.map((question) => (
-          <div key={question.term} className="rounded-md border border-zinc-200 p-4">
+          <div key={question.term} className="rounded-lg border border-zinc-200 p-4">
             <p className="text-sm text-zinc-900">
               Esta vaga {question.kind === 'required' ? 'exige' : 'valoriza'} experiência com{' '}
               <span className="font-semibold">{question.term}</span>. Você possui experiência com
@@ -117,7 +117,7 @@ function AnswerButton({
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={`rounded-md border px-3 py-1.5 text-xs font-medium transition-colors ${
+      className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors ${
         active
           ? 'border-zinc-900 bg-zinc-900 text-white'
           : 'border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-50'

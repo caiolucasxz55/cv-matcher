@@ -1,13 +1,12 @@
 'use client';
 
-import Link from 'next/link';
 import { useState } from 'react';
 import { GapQuestions } from '@/components/GapQuestions';
 import { MatchReport } from '@/components/MatchReport';
 import { ResumePreview } from '@/components/ResumePreview';
 import { ValidationPanel } from '@/components/ValidationPanel';
 import { VersionReview } from '@/components/VersionReview';
-import { Button, Card, Field, ScoreCard } from '@/components/ui';
+import { BackButton, Button, Card, Field, ScoreCard, StepIndicator } from '@/components/ui';
 import { analyzeJob, createVersion, downloadBlob, generatePdf } from '@/lib/api';
 import type {
   AdaptationStrategy,
@@ -134,42 +133,16 @@ export default function Home() {
     <main className="mx-auto max-w-4xl px-5 py-12">
       <header className="mb-10">
         {step !== 'form' && (
-          <button
-            type="button"
-            onClick={handleReset}
-            className="mb-3 text-xs text-zinc-500 underline underline-offset-2 hover:text-zinc-800"
-          >
-            ← Voltar ao início
-          </button>
-        )}
-        <div className="flex items-start justify-between gap-4">
-          <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">CV Matcher</h1>
-          <div className="mt-1 flex shrink-0 flex-col items-end gap-1 text-xs">
-            <Link
-              href="/cv-matcher-novo"
-              className="text-zinc-500 underline underline-offset-2 hover:text-zinc-800"
-            >
-              CV Matcher Novo (experimental)
-            </Link>
-            <Link
-              href="/gupy"
-              className="text-zinc-500 underline underline-offset-2 hover:text-zinc-800"
-            >
-              Currículo versão Gupy
-            </Link>
-            <Link
-              href="/habilidades"
-              className="text-zinc-500 underline underline-offset-2 hover:text-zinc-800"
-            >
-              Editar habilidades técnicas
-            </Link>
+          <div className="mb-3">
+            <BackButton onClick={handleReset}>Voltar ao início</BackButton>
           </div>
-        </div>
+        )}
+        <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">CV Matcher</h1>
         <p className="mt-1 text-sm text-zinc-600">
           Descubra se seu currículo atende a vaga, confirme o que falta e compare 3 versões
           adaptadas — sem inventar experiência.
         </p>
-        <StepIndicator step={step} />
+        <StepIndicator steps={STEP_LABELS} active={step} />
       </header>
 
       {step === 'form' && (
@@ -212,7 +185,7 @@ export default function Home() {
           </div>
 
           <div className="mt-4 flex items-center gap-3">
-            <Button onClick={handleAnalyze} disabled={!canAnalyze}>
+            <Button onClick={handleAnalyze} disabled={!canAnalyze} loading={analyzing}>
               {analyzing ? 'Analisando…' : 'Analisar vaga'}
             </Button>
             {analyzing && (
@@ -223,7 +196,7 @@ export default function Home() {
           </div>
 
           {error && (
-            <p className="mt-3 rounded-md border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800">
+            <p className="mt-3 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800">
               {error}
             </p>
           )}
@@ -238,7 +211,7 @@ export default function Home() {
             submitting={analyzing}
           />
           {error && (
-            <p className="rounded-md border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800">
+            <p className="rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800">
               {error}
             </p>
           )}
@@ -272,7 +245,7 @@ export default function Home() {
             subtitle="Gera Balanced, ATS/Keyword Focus e Experience/Impact Focus (regra 9). Nada é inventado e nenhuma informação é removida."
           >
             {analysis.recommendation.recommended && (
-              <div className="mb-4 rounded-md border border-amber-200 bg-amber-50 p-3">
+              <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-3">
                 <p className="text-xs font-semibold tracking-wide text-amber-900 uppercase">
                   Recomendado para esta vaga
                 </p>
@@ -287,13 +260,13 @@ export default function Home() {
               </div>
             )}
             {!analysis.recommendation.recommended && (
-              <p className="mb-4 rounded-md border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900">
+              <p className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900">
                 Seu currículo base já cobre bem esta vaga. Você pode criar as 3 versões mesmo
                 assim para comparar.
               </p>
             )}
             <div className="flex flex-wrap items-center gap-3">
-              <Button onClick={handleCreateVersion} disabled={creating}>
+              <Button onClick={handleCreateVersion} disabled={creating} loading={creating}>
                 {creating ? 'Criando…' : 'Criar 3 versões'}
               </Button>
               {analysis.recommendation.archetype_label && (
@@ -325,13 +298,7 @@ export default function Home() {
           <ValidationPanel validation={analysis.validation} autoFixes={[]} changeLog={[]} />
 
           <div className="flex items-center justify-between">
-            <button
-              type="button"
-              onClick={handleReset}
-              className="text-xs text-zinc-500 underline underline-offset-2 hover:text-zinc-800"
-            >
-              ← Começar de novo
-            </button>
+            <BackButton onClick={handleReset}>Começar de novo</BackButton>
             <p className="text-center text-xs text-zinc-400">Análise: {analysis.provider_name}</p>
           </div>
         </div>
@@ -339,13 +306,9 @@ export default function Home() {
 
       {step === 'versions' && version && (
         <div className="mt-2">
-          <button
-            type="button"
-            onClick={() => setStep('match')}
-            className="mb-6 text-xs text-zinc-500 underline underline-offset-2 hover:text-zinc-800"
-          >
-            ← Voltar para a análise
-          </button>
+          <div className="mb-6">
+            <BackButton onClick={() => setStep('match')}>Voltar para a análise</BackButton>
+          </div>
 
           <VersionReview
             data={version}
@@ -373,25 +336,3 @@ const STEP_LABELS: { key: Step; label: string }[] = [
   { key: 'match', label: 'Match' },
   { key: 'versions', label: '3 versões' },
 ];
-
-function StepIndicator({ step }: { step: Step }) {
-  const activeIndex = STEP_LABELS.findIndex((item) => item.key === step);
-  return (
-    <ol className="mt-4 flex flex-wrap gap-2 text-xs">
-      {STEP_LABELS.map((item, index) => (
-        <li
-          key={item.key}
-          className={`rounded-full border px-2.5 py-1 ${
-            index === activeIndex
-              ? 'border-zinc-900 bg-zinc-900 text-white'
-              : index < activeIndex
-                ? 'border-zinc-300 bg-zinc-100 text-zinc-500'
-                : 'border-zinc-200 text-zinc-400'
-          }`}
-        >
-          {index + 1}. {item.label}
-        </li>
-      ))}
-    </ol>
-  );
-}

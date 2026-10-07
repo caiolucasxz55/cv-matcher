@@ -1,8 +1,7 @@
 'use client';
 
-import Link from 'next/link';
 import { useState } from 'react';
-import { Button, Card, Field } from '@/components/ui';
+import { Button, Card, Field, IconCheck, IconCopy } from '@/components/ui';
 import { buildGupyFormat } from '@/lib/api';
 import type { GupyResponse } from '@/lib/api-types';
 
@@ -38,13 +37,7 @@ export default function GupyPage() {
   return (
     <main className="mx-auto max-w-4xl px-5 py-12">
       <header className="mb-10">
-        <Link
-          href="/"
-          className="text-xs text-zinc-500 underline underline-offset-2 hover:text-zinc-800"
-        >
-          ← Voltar ao início
-        </Link>
-        <h1 className="mt-3 text-2xl font-semibold tracking-tight text-zinc-900">
+        <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">
           Currículo versão Gupy
         </h1>
         <p className="mt-1 text-sm text-zinc-600">
@@ -94,7 +87,7 @@ export default function GupyPage() {
         </div>
 
         <div className="mt-4 flex items-center gap-3">
-          <Button onClick={handleGenerate} disabled={!canGenerate}>
+          <Button onClick={handleGenerate} disabled={!canGenerate} loading={generating}>
             {generating ? 'Gerando…' : 'Gerar currículo Gupy'}
           </Button>
           {generating && (
@@ -105,7 +98,7 @@ export default function GupyPage() {
         </div>
 
         {error && (
-          <p className="mt-3 rounded-md border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800">
+          <p className="mt-3 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800">
             {error}
           </p>
         )}
@@ -177,8 +170,13 @@ function CopyCard({
         className="w-full resize-y rounded-md border border-zinc-300 bg-zinc-50 px-3 py-2 font-mono text-xs leading-relaxed outline-none"
       />
       <div className="mt-3">
-        <Button variant="secondary" onClick={handleCopy}>
-          {copied ? 'Copiado ✓' : 'Copiar'}
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={handleCopy}
+          icon={copied ? <IconCheck className="h-3.5 w-3.5 text-emerald-600" /> : <IconCopy className="h-3.5 w-3.5" />}
+        >
+          {copied ? 'Copiado' : 'Copiar'}
         </Button>
       </div>
     </Card>

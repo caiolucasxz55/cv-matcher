@@ -13,7 +13,7 @@ import { revalidateResume } from '@/lib/api';
 import { MatchReport } from './MatchReport';
 import { ResumePreview } from './ResumePreview';
 import { ValidationPanel } from './ValidationPanel';
-import { Button, Card } from './ui';
+import { Button, Card, IconButton, IconPlus, IconX, Tag } from './ui';
 
 const STRATEGY_LETTER: Record<AdaptationStrategy, string> = {
   balanced: 'A',
@@ -137,9 +137,9 @@ export function VersionReview({
             />
           ))}
         </div>
-        <div className="mt-4 rounded-md border border-amber-200 bg-amber-50 p-3">
+        <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-3">
           <p className="text-xs font-semibold tracking-wide text-amber-900 uppercase">
-            🏆 Versão recomendada: {STRATEGY_LETTER[data.best_variant.strategy]} —{' '}
+            Versão recomendada: {STRATEGY_LETTER[data.best_variant.strategy]} —{' '}
             {data.best_variant.label}
           </p>
           <p className="mt-1 text-sm text-amber-900">{data.best_variant.reason}</p>
@@ -204,7 +204,12 @@ export function VersionReview({
         </div>
 
         <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-zinc-100 pt-4">
-          <Button variant="secondary" onClick={handleRevalidate} disabled={revalidating}>
+          <Button
+            variant="secondary"
+            onClick={handleRevalidate}
+            disabled={revalidating}
+            loading={revalidating}
+          >
             {revalidating ? 'Reanalisando…' : 'Reanalisar'}
           </Button>
           <p className="text-xs text-zinc-500">
@@ -218,12 +223,12 @@ export function VersionReview({
           </p>
         </div>
         {revalidateError && (
-          <p className="mt-3 rounded-md border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800">
+          <p className="mt-3 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800">
             {revalidateError}
           </p>
         )}
         {recomputed && effectiveRecommendation.recommended && (
-          <p className="mt-3 rounded-md border border-sky-200 bg-sky-50 p-3 text-sm text-sky-900">
+          <p className="mt-3 rounded-lg border border-sky-200 bg-sky-50 p-3 text-sm text-sky-900">
             Depois da edição, o perfil detectado ainda é {effectiveRecommendation.archetype_label}.
           </p>
         )}
@@ -237,7 +242,7 @@ export function VersionReview({
 
       <Card>
         {!effectiveValidation.is_valid && !hasPendingEdits && (
-          <p className="mb-3 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+          <p className="mb-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
             Atenção: há informação sem respaldo no currículo base (veja a validação acima). Você
             pode gerar o PDF mesmo assim — a decisão é sua.
           </p>
@@ -246,6 +251,7 @@ export function VersionReview({
           <Button
             onClick={() => onGeneratePdf(effectiveResume)}
             disabled={generatingPdf || hasPendingEdits}
+            loading={generatingPdf}
           >
             {generatingPdf ? 'Gerando PDF…' : `Aprovar e gerar PDF (versão ${STRATEGY_LETTER[strategy]})`}
           </Button>
@@ -256,7 +262,7 @@ export function VersionReview({
           </p>
         </div>
         {pdfError && (
-          <p className="mt-3 rounded-md border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800">
+          <p className="mt-3 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800">
             {pdfError}
           </p>
         )}
@@ -285,13 +291,13 @@ function VariantCard({
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={`relative rounded-md border p-4 text-left transition-colors ${
-        active ? 'border-zinc-900 bg-zinc-50' : 'border-zinc-200 hover:border-zinc-300'
+      className={`relative rounded-xl border p-4 text-left transition-colors ${
+        active ? 'border-zinc-900 bg-zinc-50' : 'border-zinc-200 bg-white hover:border-zinc-300'
       }`}
     >
       {recommended && (
-        <span className="absolute -top-2 right-3 rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-white uppercase">
-          ⭐ Recomendada
+        <span className="absolute -top-2.5 right-3">
+          <Tag tone="weak">Recomendada</Tag>
         </span>
       )}
       <span className="block text-sm font-semibold text-zinc-900">
@@ -337,14 +343,9 @@ function SkillCategoryEditor({
             className="inline-flex items-center gap-1.5 rounded border border-zinc-200 bg-zinc-50 px-2 py-1 text-xs text-zinc-700"
           >
             {item}
-            <button
-              type="button"
-              onClick={() => onRemove(item)}
-              aria-label={`Remover ${item}`}
-              className="text-zinc-400 hover:text-rose-600"
-            >
-              ×
-            </button>
+            <IconButton label={`Remover ${item}`} tone="danger" onClick={() => onRemove(item)}>
+              <IconX />
+            </IconButton>
           </span>
         ))}
       </div>
@@ -364,7 +365,13 @@ function SkillCategoryEditor({
           maxLength={80}
           className="min-w-40 flex-1 rounded-md border border-zinc-300 px-2 py-1 text-xs outline-none focus:border-zinc-900"
         />
-        <Button type="submit" variant="secondary" disabled={!draft.trim()}>
+        <Button
+          type="submit"
+          variant="secondary"
+          size="sm"
+          icon={<IconPlus className="h-3.5 w-3.5" />}
+          disabled={!draft.trim()}
+        >
           Adicionar
         </Button>
       </form>
@@ -383,7 +390,7 @@ function DiffPane({
 }) {
   return (
     <div
-      className={`rounded-md border p-3 ${
+      className={`rounded-lg border p-3 ${
         tone === 'changed' ? 'border-emerald-200 bg-emerald-50/50' : 'border-zinc-200'
       }`}
     >

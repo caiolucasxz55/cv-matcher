@@ -6,7 +6,7 @@ import type { Resume } from '@/lib/api-types';
  */
 export function ResumePreview({ resume }: { resume: Resume }) {
   return (
-    <article className="rounded-lg border border-zinc-200 bg-white p-8 text-[13px] leading-relaxed text-zinc-800">
+    <article className="rounded-xl border border-zinc-200 bg-white p-8 text-[13px] leading-relaxed text-zinc-800 shadow-sm">
       <header className="mb-5">
         <h1 className="text-xl font-bold text-zinc-900">{resume.basics.name}</h1>
         <p className="text-zinc-600">{resume.basics.headline}</p>

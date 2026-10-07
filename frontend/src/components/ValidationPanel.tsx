@@ -59,7 +59,7 @@ export function ValidationPanel({
       }`}
     >
       <div
-        className={`mb-4 rounded-md border p-3 text-sm ${
+        className={`mb-4 rounded-lg border p-3 text-sm ${
           validation.is_valid
             ? 'border-emerald-200 bg-emerald-50 text-emerald-900'
             : 'border-rose-200 bg-rose-50 text-rose-900'

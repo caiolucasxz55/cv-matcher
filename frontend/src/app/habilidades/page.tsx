@@ -1,8 +1,7 @@
 'use client';
 
-import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { Button, Card } from '@/components/ui';
+import { Button, Card, IconButton, IconPlus, IconX, Spinner } from '@/components/ui';
 import { addSkill, getSkills, removeSkill } from '@/lib/api';
 import type { SkillsOverview } from '@/lib/api-types';
 
@@ -51,13 +50,7 @@ export default function HabilidadesPage() {
   return (
     <main className="mx-auto max-w-4xl px-5 py-12">
       <header className="mb-10">
-        <Link
-          href="/"
-          className="text-xs text-zinc-500 underline underline-offset-2 hover:text-zinc-800"
-        >
-          ← Voltar ao início
-        </Link>
-        <h1 className="mt-3 text-2xl font-semibold tracking-tight text-zinc-900">
+        <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">
           Habilidades técnicas
         </h1>
         <p className="mt-1 text-sm text-zinc-600">
@@ -70,12 +63,16 @@ export default function HabilidadesPage() {
       </header>
 
       {error && (
-        <p className="mb-6 rounded-md border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800">
+        <p className="mb-6 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800">
           {error}
         </p>
       )}
 
-      {loading && <p className="text-sm text-zinc-500">Carregando…</p>}
+      {loading && (
+        <p className="flex items-center gap-2 text-sm text-zinc-500">
+          <Spinner className="h-4 w-4" /> Carregando…
+        </p>
+      )}
 
       {overview && (
         <div className="space-y-6">
@@ -106,15 +103,14 @@ export default function HabilidadesPage() {
                     )}
                     {item.name}
                     {item.custom && (
-                      <button
-                        type="button"
+                      <IconButton
+                        label={`Remover ${item.name}`}
+                        tone="danger"
                         onClick={() => handleRemove(category.id, item.name)}
                         disabled={busy === `remove:${category.id}:${item.name}`}
-                        aria-label={`Remover ${item.name}`}
-                        className="text-zinc-400 hover:text-rose-600 disabled:opacity-50"
                       >
-                        ×
-                      </button>
+                        <IconX />
+                      </IconButton>
                     )}
                   </span>
                 ))}
@@ -145,6 +141,9 @@ export default function HabilidadesPage() {
                 <Button
                   type="submit"
                   variant="secondary"
+                  size="sm"
+                  icon={<IconPlus className="h-3.5 w-3.5" />}
+                  loading={busy === `add:${category.id}`}
                   disabled={!(draft[category.id] ?? '').trim() || busy === `add:${category.id}`}
                 >
                   {busy === `add:${category.id}` ? 'Adicionando…' : 'Adicionar'}

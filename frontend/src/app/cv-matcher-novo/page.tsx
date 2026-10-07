@@ -1,13 +1,12 @@
 'use client';
 
-import Link from 'next/link';
 import { useState } from 'react';
 import { GapQuestions } from '@/components/GapQuestions';
 import { MatchReport } from '@/components/MatchReport';
 import { ResumePreview } from '@/components/ResumePreview';
 import { ValidationPanel } from '@/components/ValidationPanel';
 import { VersionReview } from '@/components/VersionReview';
-import { Button, Card, Field, ScoreCard } from '@/components/ui';
+import { BackButton, Button, Card, Field, ScoreCard, StepIndicator, Tag } from '@/components/ui';
 import { analyzeJob, createFocusedVersion, downloadBlob, generatePdf } from '@/lib/api';
 import type {
   AdaptationStrategy,
@@ -138,43 +137,13 @@ export default function CvMatcherNovo() {
     <main className="mx-auto max-w-4xl px-5 py-12">
       <header className="mb-10">
         {step !== 'form' && (
-          <button
-            type="button"
-            onClick={handleReset}
-            className="mb-3 text-xs text-zinc-500 underline underline-offset-2 hover:text-zinc-800"
-          >
-            ← Voltar ao início
-          </button>
+          <div className="mb-3">
+            <BackButton onClick={handleReset}>Voltar ao início</BackButton>
+          </div>
         )}
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">
-              CV Matcher Novo
-            </h1>
-            <span className="rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-amber-800 uppercase">
-              Experimental
-            </span>
-          </div>
-          <div className="mt-1 flex shrink-0 flex-col items-end gap-1 text-xs">
-            <Link
-              href="/"
-              className="text-zinc-500 underline underline-offset-2 hover:text-zinc-800"
-            >
-              CV Matcher (atual)
-            </Link>
-            <Link
-              href="/gupy"
-              className="text-zinc-500 underline underline-offset-2 hover:text-zinc-800"
-            >
-              Currículo versão Gupy
-            </Link>
-            <Link
-              href="/habilidades"
-              className="text-zinc-500 underline underline-offset-2 hover:text-zinc-800"
-            >
-              Editar habilidades técnicas
-            </Link>
-          </div>
+        <div className="flex items-center gap-2">
+          <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">CV Matcher Novo</h1>
+          <Tag tone="weak">Beta</Tag>
         </div>
         <p className="mt-1 text-sm text-zinc-600">
           Mesmo fluxo do CV Matcher atual, mas a lista de habilidades é curada pela categoria
@@ -183,7 +152,7 @@ export default function CvMatcherNovo() {
           são reduzidas a só um ou dois itens — em vez de mostrar tudo por igual. Compare esta
           versão com a atual em vagas reais para ver qual traz mais retorno.
         </p>
-        <StepIndicator step={step} />
+        <StepIndicator steps={STEP_LABELS} active={step} />
       </header>
 
       {step === 'form' && (
@@ -226,7 +195,7 @@ export default function CvMatcherNovo() {
           </div>
 
           <div className="mt-4 flex items-center gap-3">
-            <Button onClick={handleAnalyze} disabled={!canAnalyze}>
+            <Button onClick={handleAnalyze} disabled={!canAnalyze} loading={analyzing}>
               {analyzing ? 'Analisando…' : 'Analisar vaga'}
             </Button>
             {analyzing && (
@@ -237,7 +206,7 @@ export default function CvMatcherNovo() {
           </div>
 
           {error && (
-            <p className="mt-3 rounded-md border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800">
+            <p className="mt-3 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800">
               {error}
             </p>
           )}
@@ -252,7 +221,7 @@ export default function CvMatcherNovo() {
             submitting={analyzing}
           />
           {error && (
-            <p className="rounded-md border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800">
+            <p className="rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800">
               {error}
             </p>
           )}
@@ -286,7 +255,7 @@ export default function CvMatcherNovo() {
             subtitle="Gera Balanced, ATS/Keyword Focus e Experience/Impact Focus com a categoria dominante da vaga em foco. Nada é inventado, mas habilidades de categorias secundárias podem ser omitidas desta versão."
           >
             {analysis.recommendation.recommended && (
-              <div className="mb-4 rounded-md border border-amber-200 bg-amber-50 p-3">
+              <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-3">
                 <p className="text-xs font-semibold tracking-wide text-amber-900 uppercase">
                   Recomendado para esta vaga
                 </p>
@@ -301,13 +270,13 @@ export default function CvMatcherNovo() {
               </div>
             )}
             {!analysis.recommendation.recommended && (
-              <p className="mb-4 rounded-md border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900">
+              <p className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900">
                 Seu currículo base já cobre bem esta vaga. Você pode criar as 3 versões mesmo
                 assim para comparar.
               </p>
             )}
             <div className="flex flex-wrap items-center gap-3">
-              <Button onClick={handleCreateVersion} disabled={creating}>
+              <Button onClick={handleCreateVersion} disabled={creating} loading={creating}>
                 {creating ? 'Criando…' : 'Criar 3 versões curadas'}
               </Button>
               {analysis.recommendation.archetype_label && (
@@ -339,13 +308,7 @@ export default function CvMatcherNovo() {
           <ValidationPanel validation={analysis.validation} autoFixes={[]} changeLog={[]} />
 
           <div className="flex items-center justify-between">
-            <button
-              type="button"
-              onClick={handleReset}
-              className="text-xs text-zinc-500 underline underline-offset-2 hover:text-zinc-800"
-            >
-              ← Começar de novo
-            </button>
+            <BackButton onClick={handleReset}>Começar de novo</BackButton>
             <p className="text-center text-xs text-zinc-400">Análise: {analysis.provider_name}</p>
           </div>
         </div>
@@ -353,13 +316,9 @@ export default function CvMatcherNovo() {
 
       {step === 'versions' && version && (
         <div className="mt-2">
-          <button
-            type="button"
-            onClick={() => setStep('match')}
-            className="mb-6 text-xs text-zinc-500 underline underline-offset-2 hover:text-zinc-800"
-          >
-            ← Voltar para a análise
-          </button>
+          <div className="mb-6">
+            <BackButton onClick={() => setStep('match')}>Voltar para a análise</BackButton>
+          </div>
 
           <VersionReview
             data={version}
@@ -387,25 +346,3 @@ const STEP_LABELS: { key: Step; label: string }[] = [
   { key: 'match', label: 'Match' },
   { key: 'versions', label: '3 versões' },
 ];
-
-function StepIndicator({ step }: { step: Step }) {
-  const activeIndex = STEP_LABELS.findIndex((item) => item.key === step);
-  return (
-    <ol className="mt-4 flex flex-wrap gap-2 text-xs">
-      {STEP_LABELS.map((item, index) => (
-        <li
-          key={item.key}
-          className={`rounded-full border px-2.5 py-1 ${
-            index === activeIndex
-              ? 'border-zinc-900 bg-zinc-900 text-white'
-              : index < activeIndex
-                ? 'border-zinc-300 bg-zinc-100 text-zinc-500'
-                : 'border-zinc-200 text-zinc-400'
-          }`}
-        >
-          {index + 1}. {item.label}
-        </li>
-      ))}
-    </ol>
-  );
-}

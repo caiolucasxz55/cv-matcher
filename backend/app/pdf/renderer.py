@@ -145,13 +145,6 @@ def render_resume_pdf(resume: Resume, filename: str) -> PdfGenerationResult:
     story.extend(_section_title("Resumo profissional"))
     story.append(Paragraph(_esc(resume.summary), _BODY))
 
-    story.extend(_section_title("Formação"))
-    for education in resume.education:
-        story.append(Paragraph(_esc(education.degree), _ROLE))
-        story.append(
-            Paragraph(f"{_esc(education.institution)}  ·  {_esc(education.period)}", _META)
-        )
-
     story.extend(_section_title("Experiência profissional"))
     for experience in resume.experience:
         block: list = [
@@ -161,6 +154,13 @@ def render_resume_pdf(resume: Resume, filename: str) -> PdfGenerationResult:
             Spacer(1, 3),
         ]
         story.append(KeepTogether(block))
+
+    story.extend(_section_title("Formação"))
+    for education in resume.education:
+        story.append(Paragraph(_esc(education.degree), _ROLE))
+        story.append(
+            Paragraph(f"{_esc(education.institution)}  ·  {_esc(education.period)}", _META)
+        )
 
     story.extend(_section_title("Habilidades técnicas"))
     for category in resume.skill_categories:

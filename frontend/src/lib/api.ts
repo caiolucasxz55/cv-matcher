@@ -90,6 +90,22 @@ export function buildGupyFormat(payload: JobPayload): Promise<GupyResponse> {
   );
 }
 
+/**
+ * "CV Matcher Novo" (experimental): mesmas TRÊS variantes de `createVersion`,
+ * mas com a seção de habilidades curada pela categoria dominante da vaga em
+ * vez de só reordenada — para comparar lado a lado qual versão traz mais
+ * retorno em vagas reais.
+ */
+export function createFocusedVersion(
+  payload: CreateVersionPayload,
+): Promise<CreateVersionResponse> {
+  return postJson<CreateVersionResponse>(
+    '/api/focused/versions',
+    payload,
+    'Falha ao criar a versão adaptada.',
+  );
+}
+
 export async function generatePdf(params: {
   resume: Resume;
   company?: string;

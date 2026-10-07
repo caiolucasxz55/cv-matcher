@@ -8,7 +8,7 @@ import { ResumePreview } from '@/components/ResumePreview';
 import { ValidationPanel } from '@/components/ValidationPanel';
 import { VersionReview } from '@/components/VersionReview';
 import { Button, Card, Field, ScoreCard } from '@/components/ui';
-import { analyzeJob, createVersion, downloadBlob, generatePdf } from '@/lib/api';
+import { analyzeJob, createFocusedVersion, downloadBlob, generatePdf } from '@/lib/api';
 import type {
   AdaptationStrategy,
   AnalyzeResponse,
@@ -18,13 +18,17 @@ import type {
 } from '@/lib/api-types';
 
 /**
- * Fluxo (regra 13):
- *   VAGA -> ANALISE -> MATCH -> PERGUNTAS SOBRE GAPS -> 3 VERSOES ->
- *   COMPARACAO -> RECOMENDACAO -> PREVIEW -> PDF
+ * CV Matcher NOVO (experimental) — mesmo fluxo e os mesmos componentes da
+ * página principal (duplicada de propósito, ver `app/page.tsx`), mas as 3
+ * versões são geradas por `POST /api/focused/versions`: a seção de
+ * habilidades é CURADA pela categoria dominante da vaga (ex.: vaga backend
+ * Python → categoria "Backend" fica inteira, as demais são cortadas a
+ * poucos itens), em vez de só reordenada como no motor oficial. Existe para
+ * comparar lado a lado, em vagas reais, qual versão traz mais retorno.
  */
 type Step = 'form' | 'gap-questions' | 'match' | 'versions';
 
-export default function Home() {
+export default function CvMatcherNovo() {
   const [company, setCompany] = useState('');
   const [jobTitle, setJobTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -91,7 +95,7 @@ export default function Home() {
     setPdfError(null);
 
     try {
-      const created = await createVersion(jobPayload());
+      const created = await createFocusedVersion(jobPayload());
       setVersion(created);
       setStrategy(created.best_variant.strategy);
       setStep('versions');
@@ -143,13 +147,20 @@ export default function Home() {
           </button>
         )}
         <div className="flex items-start justify-between gap-4">
-          <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">CV Matcher</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">
+              CV Matcher Novo
+            </h1>
+            <span className="rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-amber-800 uppercase">
+              Experimental
+            </span>
+          </div>
           <div className="mt-1 flex shrink-0 flex-col items-end gap-1 text-xs">
             <Link
-              href="/cv-matcher-novo"
+              href="/"
               className="text-zinc-500 underline underline-offset-2 hover:text-zinc-800"
             >
-              CV Matcher Novo (experimental)
+              CV Matcher (atual)
             </Link>
             <Link
               href="/gupy"
@@ -166,8 +177,11 @@ export default function Home() {
           </div>
         </div>
         <p className="mt-1 text-sm text-zinc-600">
-          Descubra se seu currículo atende a vaga, confirme o que falta e compare 3 versões
-          adaptadas — sem inventar experiência.
+          Mesmo fluxo do CV Matcher atual, mas a lista de habilidades é curada pela categoria
+          dominante da vaga: numa vaga backend Python, por exemplo, "Backend" fica inteira (com
+          Java e Node.js inclusive, como reforço) e as demais categorias (Frontend, IA, Cloud...)
+          são reduzidas a só um ou dois itens — em vez de mostrar tudo por igual. Compare esta
+          versão com a atual em vagas reais para ver qual traz mais retorno.
         </p>
         <StepIndicator step={step} />
       </header>
@@ -268,8 +282,8 @@ export default function Home() {
           <MatchReport analysis={analysis.analysis} match={analysis.match} />
 
           <Card
-            title="Criar as 3 versões adaptadas"
-            subtitle="Gera Balanced, ATS/Keyword Focus e Experience/Impact Focus (regra 9). Nada é inventado e nenhuma informação é removida."
+            title="Criar as 3 versões adaptadas (curadas)"
+            subtitle="Gera Balanced, ATS/Keyword Focus e Experience/Impact Focus com a categoria dominante da vaga em foco. Nada é inventado, mas habilidades de categorias secundárias podem ser omitidas desta versão."
           >
             {analysis.recommendation.recommended && (
               <div className="mb-4 rounded-md border border-amber-200 bg-amber-50 p-3">
@@ -294,7 +308,7 @@ export default function Home() {
             )}
             <div className="flex flex-wrap items-center gap-3">
               <Button onClick={handleCreateVersion} disabled={creating}>
-                {creating ? 'Criando…' : 'Criar 3 versões'}
+                {creating ? 'Criando…' : 'Criar 3 versões curadas'}
               </Button>
               {analysis.recommendation.archetype_label && (
                 <span className="text-xs text-zinc-500">

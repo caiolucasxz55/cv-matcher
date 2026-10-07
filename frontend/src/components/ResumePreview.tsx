@@ -34,16 +34,6 @@ export function ResumePreview({ resume }: { resume: Resume }) {
         <p className="text-justify">{resume.summary}</p>
       </Section>
 
-      <Section title="Formação">
-        {resume.education.map((education) => (
-          <div key={education.id} className="flex flex-wrap items-baseline justify-between gap-2">
-            <p className="font-semibold text-zinc-900">{education.degree}</p>
-            <p className="text-xs text-zinc-500">{education.period}</p>
-            <p className="w-full text-xs text-zinc-500">{education.institution}</p>
-          </div>
-        ))}
-      </Section>
-
       <Section title="Experiência profissional">
         {resume.experience.map((experience) => (
           <div key={experience.id} className="mb-3">
@@ -62,6 +52,16 @@ export function ResumePreview({ resume }: { resume: Resume }) {
                 </li>
               ))}
             </ul>
+          </div>
+        ))}
+      </Section>
+
+      <Section title="Formação">
+        {resume.education.map((education) => (
+          <div key={education.id} className="flex flex-wrap items-baseline justify-between gap-2">
+            <p className="font-semibold text-zinc-900">{education.degree}</p>
+            <p className="text-xs text-zinc-500">{education.period}</p>
+            <p className="w-full text-xs text-zinc-500">{education.institution}</p>
           </div>
         ))}
       </Section>

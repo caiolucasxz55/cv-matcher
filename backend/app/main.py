@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.ai.factory import get_ai_provider
 from app.config import get_settings
-from app.routers import adapt, gupy, pdf, skills
+from app.routers import adapt, focused, gupy, pdf, skills
 
 logging.basicConfig(level=logging.INFO)
 
@@ -31,6 +31,7 @@ app.add_middleware(
 )
 
 app.include_router(adapt.router, prefix="/api")
+app.include_router(focused.router, prefix="/api")
 app.include_router(gupy.router, prefix="/api")
 app.include_router(pdf.router, prefix="/api")
 app.include_router(skills.router, prefix="/api")
